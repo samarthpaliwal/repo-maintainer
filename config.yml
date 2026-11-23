@@ -1,0 +1,54 @@
+# repo-maintainer configuration. Edit via pull request; changes take effect on the next run.
+
+owner: samarthpaliwal
+
+# Master switch. Set true to pause everything (or set repo variable MAINTAINER_PAUSED=true).
+paused: false
+
+# "pr"     = push a branch and open a pull request (safest; recommended default).
+# "direct" = push straight to the default branch, but ONLY if the branch is not protected
+#            and validation passed. Falls back to "pr" otherwise.
+mode: pr
+
+# Max repositories changed per run, and per-change size limits.
+max_repos_per_run: 1
+max_files_per_change: 5
+max_changed_lines: 60
+
+# Git author. Leave email empty to use the account's GitHub noreply address
+# (<id>+<login>@users.noreply.github.com), which always links to your profile.
+author:
+  name: Samarth Paliwal
+  email: ""
+
+# Explicit allowlist = least privilege. Only these repos are ever inspected or modified.
+# Keep this in sync with the repositories selected on the fine-grained token.
+repos:
+  - name: samarthpaliwal/Stock_Tracker
+  - name: samarthpaliwal/Text-to-speech
+  - name: samarthpaliwal/Network-traffic
+  - name: samarthpaliwal/CreditCardFraud
+  - name: samarthpaliwal/Facial-Recognition
+  - name: samarthpaliwal/adaptive-market-making-simulator
+  - name: samarthpaliwal/event-processing-platform
+  - name: samarthpaliwal/nova-ai
+  - name: samarthpaliwal/Jarvis
+    # Optional per-repo settings:
+    # test_command: "pytest -q"     # run after changes; failure aborts the change
+    # fixers: [typos]               # restrict which fixers may run
+  - name: samarthpaliwal/SpotifyWidget
+
+# Never modified, even if listed above.
+exclude:
+  - samarthpaliwal/samarthpaliwal   # profile README
+
+# Repos with no push in this many days are treated as abandoned and skipped.
+abandoned_after_days: 730
+
+# Fixers (see maintainer/fixers.py). Both are deterministic and conservative.
+fixers:
+  - typos        # codespell on docs (*.md, *.rst, *.txt) only
+  - unused_imports  # ruff F401 on Python files (never __init__.py)
+
+# Words codespell must leave alone.
+typo_ignore_words: [nd, te, ba, ans, hist, fo, wan]

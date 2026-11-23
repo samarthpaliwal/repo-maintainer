@@ -1,0 +1,48 @@
+name: daily-maintenance
+
+on:
+  schedule:
+    # 10:00 America/Phoenix = 17:00 UTC year-round (Arizona has no DST).
+    # GitHub may start scheduled runs several minutes late under load; that is a platform limit.
+    - cron: "0 17 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Validate only; push nothing"
+        type: boolean
+        default: true
+
+# Duplicate-run protection.
+concurrency:
+  group: daily-maintenance
+  cancel-in-progress: false
+
+permissions:
+  contents: read   # this workflow's own GITHUB_TOKEN needs nothing more; writes use MAINTAINER_TOKEN
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Pause switch: set repo variable MAINTAINER_PAUSED=true (Settings > Variables).
+    if: ${{ vars.MAINTAINER_PAUSED != 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Run maintainer
+        env:
+          GH_TOKEN: ${{ secrets.MAINTAINER_TOKEN }}
+          # Scheduled runs stay in dry-run until you set repo variable LIVE=true.
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || (vars.LIVE == 'true' && 'false' || 'true') }}
+        run: python -m maintainer.main
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: run-log
+          path: logs/
+          retention-days: 90
+          if-no-files-found: ignore
